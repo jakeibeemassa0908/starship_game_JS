@@ -118,15 +118,14 @@ function tir(){
 	        var soucoupe_atteinte=tirReussi(that);
 	        if(soucoupe_atteinte!=null){
 	        	context_canvas.clearRect(that.x-50,that.y+10,img_tir.width,img_tir.height);
-				delete that.x;
-				delete that.y;
-
+				//enlever la soucoupe de l'array
+				enleverSoucoupe(soucoupe_atteinte);
 				soucoupe_atteinte.atteint=true;
 			}
 
 	        if(that.x<=X_canvas + 40){
 	            that.animationTir(that.y);
-	        	}
+	        }
 	    },60);
 	}
 }
@@ -163,11 +162,9 @@ function soucoupeVolante(){
 
 function checkColision(t){
 	for (var i = 0;i<soucoupeArray.length;i++) {
-		if(soucoupeArray[i].x != undefined && t.x != undefined){
 			if(colision(t,soucoupeArray[i])){
 				return soucoupeArray[i];
 			}
-		}
 	}
 	return null;
 }
@@ -183,6 +180,13 @@ function colision(a,b){
         ((a.x + a.width) < b.x) ||
         (a.x > (b.x + b.width))
     );
+}
+
+function enleverSoucoupe(soucoupe){
+	var index=soucoupeArray.indexOf(soucoupe);
+	if(index >-1){
+		soucoupeArray.splice(index,1);
+	}
 }
 /** n'oubliez pas de faire précéder le code de vos fonctions 
     d'un commentaire documentant la fonction  **/
