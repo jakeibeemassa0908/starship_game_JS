@@ -18,6 +18,9 @@ var TOUCHE_ESPACE=32;
 var bouton_nouvelleSoucoupe;
 var img_soucoupe;
 
+var tirArray=[];
+var soucoupeArray=[];
+
 
 /**
 Initalise la soucoupe dans le canvas
@@ -47,10 +50,11 @@ window.onload=function (){
    	 context_canvas=canvas.getContext('2d');
    	 context_canvas.drawImage(img_vaisseau,X_vaisseau,Y_vaisseau)
 
-   	 bouton_nouvelleSoucoupe = document.getElementById("nouvelleSoucoupe");
+   	bouton_nouvelleSoucoupe = document.getElementById("nouvelleSoucoupe");
 	bouton_nouvelleSoucoupe.addEventListener("click", function(){
 			var newSoucoupe = new soucoupeVolante();
 			newSoucoupe.animationSoucoupe();
+			soucoupeArray.push(newSoucoupe);
 		});
    	 }
 }
@@ -85,6 +89,8 @@ function check(e) {
 	    var instance = new tir();
 	    instance.initialize(X_vaisseau+50,Y_vaisseau);
 	    instance.animationTir();
+
+	    tirArray.push(instance);
     }
 }
 /** 
@@ -104,13 +110,23 @@ function tir(){
 	    setTimeout(function(){
 	    	//Si le premier a tire a deja ete fait
 	    	if(that.x>100){
-	    		context_canvas.clearRect(that.x-48,that.y+10,img_tir.width,img_tir.height);
+	    		context_canvas.clearRect(that.x-50,that.y+10,img_tir.width,img_tir.height);
 	    	}
 	        context_canvas.drawImage(img_tir,that.x,that.y+10);
 	        that.x+=50;
+
+	        var soucoupe_atteinte=tirReussi(that);
+	        if(soucoupe_atteinte!=null){
+	        	context_canvas.clearRect(that.x-50,that.y+10,img_tir.width,img_tir.height);
+				delete that.x;
+				delete that.y;
+
+				soucoupe_atteinte.atteint=true;
+			}
+
 	        if(that.x<=X_canvas + 40){
 	            that.animationTir(that.y);
-	        }
+	        	}
 	    },60);
 	}
 }
@@ -123,6 +139,7 @@ function soucoupeVolante(){
 	this.y = Math.floor((Math.random() * Y_canvas) + 1);
 	this.width=img_soucoupe.width;
 	this.height=img_soucoupe.height;
+	this.atteint=false;
 	bouton_nouvelleSoucoupe.blur();
 
 	this.animationSoucoupe =function animationSoucoupe(){
@@ -134,18 +151,31 @@ function soucoupeVolante(){
 				}
 		        context_canvas.drawImage(img_soucoupe,that.x,that.y);
 		        that.x-=50;
-		        if(that.x>=-50){
+		        if(that.x>=-50 && that.atteint==false){
 		            that.animationSoucoupe(that.y);
-		        }
+		        }else{
+	        	//alert(that.x);
+	        	context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
+	        }
 	    },300);
 	}
 }
 
-function tirReussi(tir,soucoupe){
-	if(colision(tir,soucoupe))
-		return soucoupe;
+function checkColision(t){
+	for (var i = 0;i<soucoupeArray.length;i++) {
+		if(soucoupeArray[i].x != undefined && t.x != undefined){
+			if(colision(t,soucoupeArray[i])){
+				return soucoupeArray[i];
+			}
+		}
+	}
 	return null;
 }
+
+function tirReussi(tir){
+	return checkColision(tir);
+}
+
 function colision(a,b){
 	    return !(
         ((a.y + a.height) < (b.y)) ||
