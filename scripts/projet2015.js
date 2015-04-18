@@ -1,4 +1,3 @@
-/***********************************************/
 /**                                            */
 /**              MINI-PROJET JS 2015           */
 /**                                            */
@@ -7,7 +6,8 @@
 /** placez ici votre code javascript réponse aux questions du sujet de projet */
 var canvas; //Le canvas html
 var img_vaisseau; //La soucoupe
-var Y_vaisseau; //La largeur initiale de la soucoupe
+var img_tir;
+var Y_vaisseau=0; //La largeur initiale de la soucoupe
 var Y_canvas; //La largeur du canvas
 var context_canvas; //Le context du canvas
 var X_vaisseau=40; //positionement soucoupe en longueur
@@ -24,9 +24,6 @@ Initalise la soucoupe dans le canvas
 **/
 window.onload=function (){
 	canvas=document.getElementById("stars");
-
-	bouton_nouvelleSoucoupe = document.getElementById("nouvelleSoucoupe");
-	bouton_nouvelleSoucoupe.addEventListener("click", function(){soucoupeVolante();});
 	//recuperer longueur et largeur canvas
 	Y_canvas=canvas.height;
 	X_canvas=canvas.width;
@@ -38,6 +35,9 @@ window.onload=function (){
 	img_vaisseau=document.createElement('img');
 	img_vaisseau.src="images/vaisseau-ballon-petit.png";	
 
+	img_tir=document.createElement('img');	
+	img_tir.src="images/tir.png";
+
 	//definir l'image de la soucoupe
 	img_soucoupe = document.createElement('img');
 	img_soucoupe.src = "images/flyingSaucer-petit.png";
@@ -46,7 +46,13 @@ window.onload=function (){
 	img_vaisseau.onload = function() {
    	 context_canvas=canvas.getContext('2d');
    	 context_canvas.drawImage(img_vaisseau,X_vaisseau,Y_vaisseau)
-   	 	}
+
+   	 bouton_nouvelleSoucoupe = document.getElementById("nouvelleSoucoupe");
+	bouton_nouvelleSoucoupe.addEventListener("click", function(){
+			var newSoucoupe = new soucoupeVolante();
+			newSoucoupe.animationSoucoupe();
+		});
+   	 }
 }
 
 //Capturer entrer clavier
@@ -61,7 +67,7 @@ function check(e) {
     if(code==TOUCHE_HAUT){
 	    if(Y_vaisseau<8)
 			return;
-	    	context_canvas.clearRect(X_vaisseau, Y_vaisseau, 50, 50); 
+	    	context_canvas.clearRect(X_vaisseau, Y_vaisseau, img_vaisseau.width, img_vaisseau.height); 
 	    	Y_vaisseau-=8; //bouger la soucoupe de 8 pixels
 	    	context_canvas.drawImage(img_vaisseau,X_vaisseau,Y_vaisseau);
     } 
@@ -76,30 +82,34 @@ function check(e) {
     //touche espace
     else if(code==TOUCHE_ESPACE){
     	//declencher le tir
-    	tir(Y_vaisseau);
+	    var instance = new tir();
+	    instance.initialize(X_vaisseau+50,Y_vaisseau);
+	    instance.animationTir();
     }
 }
 /** 
 Fonction tir: declence le tir et l'annime a chaque fois 
 que la touche de tir est presser
 **/
-function tir(){
-	img_tir=document.createElement('img');	
-	img_tir.src="images/tir.png";
 
-	var longueur_tir=X_vaisseau+50; //le tir commence 50 px apres la soucoupe.
-	animationTir(Y_vaisseau);
-	//animer le tir
-	function animationTir(Y_vaisseau){
+function tir(){
+	this.initialize = function(x,y){
+		this.x = x;
+		this.y=y;
+		this.width=img_tir.width;
+		this.height=img_tir.height;
+	}
+	this.animationTir=function animationTir(){
+		var that=this;
 	    setTimeout(function(){
 	    	//Si le premier a tire a deja ete fait
-	    	if(longueur_tir>100){
-	    		context_canvas.clearRect(longueur_tir-48,Y_vaisseau+10,50,10);
+	    	if(that.x>100){
+	    		context_canvas.clearRect(that.x-48,that.y+10,img_tir.width,img_tir.height);
 	    	}
-	        context_canvas.drawImage(img_tir,longueur_tir,Y_vaisseau+10);
-	        longueur_tir+=50;
-	        if(longueur_tir<=X_canvas + 40){
-	            animationTir(Y_vaisseau);
+	        context_canvas.drawImage(img_tir,that.x,that.y+10);
+	        that.x+=50;
+	        if(that.x<=X_canvas + 40){
+	            that.animationTir(that.y);
 	        }
 	    },60);
 	}
@@ -109,25 +119,40 @@ function tir(){
 Creer une nouvelle soucoupe et l'animer vers le vaisseau
 **/
 function soucoupeVolante(){
-	var X_soucoupe=X_canvas-50; 
-	var Y_soucoupe = Math.floor((Math.random() * Y_canvas) + 1);
-   	context_canvas.drawImage(img_soucoupe,X_soucoupe,Y_soucoupe);
+	this.x=X_canvas-50; 
+	this.y = Math.floor((Math.random() * Y_canvas) + 1);
+	this.width=img_soucoupe.width;
+	this.height=img_soucoupe.height;
 	bouton_nouvelleSoucoupe.blur();
 
-	animationSoucoupe(Y_soucoupe);
-	function animationSoucoupe(Y_soucoupe){
+	this.animationSoucoupe =function animationSoucoupe(){
+			var that =this;
 			setTimeout(function(){
 				//Si la soucoupe a deja bouger une premiere fois
-				if(X_soucoupe<X_canvas-50){
-					context_canvas.clearRect(X_soucoupe+48,Y_soucoupe,50,50);
+				if(that.x<X_canvas- that.width){
+					context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
 				}
-		        context_canvas.drawImage(img_soucoupe,X_soucoupe,Y_soucoupe);
-		        X_soucoupe-=50;
-		        if(X_soucoupe>=-50){
-		            animationSoucoupe(Y_soucoupe);
+		        context_canvas.drawImage(img_soucoupe,that.x,that.y);
+		        that.x-=50;
+		        if(that.x>=-50){
+		            that.animationSoucoupe(that.y);
 		        }
 	    },300);
 	}
 }
+
+function tirReussi(tir,soucoupe){
+	if(colision(tir,soucoupe))
+		return soucoupe;
+	return null;
+}
+function colision(a,b){
+	    return !(
+        ((a.y + a.height) < (b.y)) ||
+        (a.y > (b.y + b.height)) ||
+        ((a.x + a.width) < b.x) ||
+        (a.x > (b.x + b.width))
+    );
+}
 /** n'oubliez pas de faire précéder le code de vos fonctions 
-    d'un commentaire documentant la fonction                   **/
+    d'un commentaire documentant la fonction  **/
