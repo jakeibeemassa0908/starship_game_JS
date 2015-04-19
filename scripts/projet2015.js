@@ -16,8 +16,11 @@ var TOUCHE_HAUT=38;
 var TOUCHE_BAS=40;
 var TOUCHE_ESPACE=32;
 var bouton_nouvelleSoucoupe;
+var bouton_flotteSoucoupe;
+var flag=false; //
 var img_soucoupe;
 var score=0;
+var intervaleTemps=1000; //intervale temps en milliseconde pour que une nouvelle soucoupe soit creer
 var afficheScore;
 var tirArray=[];
 var soucoupeArray=[];
@@ -50,22 +53,44 @@ window.onload=function (){
 	img_soucoupe = document.createElement('img');
 	img_soucoupe.src = "images/flyingSaucer-petit.png";
 
+
 	//positionner la soucoupe initalement sur le canvas
 	img_vaisseau.onload = function() {
    	 context_canvas=canvas.getContext('2d');
    	 context_canvas.drawImage(img_vaisseau,X_vaisseau,Y_vaisseau)
+   	 }
 
    	bouton_nouvelleSoucoupe = document.getElementById("nouvelleSoucoupe");
 	bouton_nouvelleSoucoupe.addEventListener("click", function(){
-			var newSoucoupe = new soucoupeVolante();
-			newSoucoupe.animationSoucoupe();
-			soucoupeArray.push(newSoucoupe);
+			creerNouvelleSoucoupe();
 		});
-   	 }
+
+	bouton_flotteSoucoupe = document.getElementById("flotteSoucoupes");
+	bouton_flotteSoucoupe.addEventListener("click", function(){
+			flag = !flag;
+			bouton_flotteSoucoupe.blur();
+			creerSoucoupeTime();
+		});
 }
 
 //Capturer entrer clavier
 window.addEventListener('keydown',this.check,false);
+
+/** 
+	Creer une nouvelle soucoupe dans un interval specific de temps
+**/
+function creerSoucoupeTime(){
+	var nombreAleatoire = genererNomberAleatoire(10);//creer un nombre aleatoire entre 0-10
+	setTimeout(function(){
+		if(flag){
+			creerSoucoupeTime();
+			//creer la probabilite 0.5 en verifiant si le nombre aleatoirement creer est pair ou impair
+			if(nombreAleatoire%2==0){
+				creerNouvelleSoucoupe();
+			}
+		}
+	},intervaleTemps);
+}
 
 /** 
 verifie la touche du clavier et prend l'action correspondante
@@ -148,7 +173,7 @@ function soucoupeVolante(){
 	this.x=X_canvas-50; 
 	this.width=img_soucoupe.width;
 	this.height=img_soucoupe.height;
-	this.y = Math.floor((Math.random() * Y_canvas-this.height) + 1);
+	this.y = genererNomberAleatoire(Y_canvas-this.height);
 	this.atteint=false;
 	bouton_nouvelleSoucoupe.blur();
 
@@ -176,6 +201,18 @@ function soucoupeVolante(){
 	}
 }
 
+/** 
+	Creer une nouvelle soucoupe et l'animer
+**/
+function creerNouvelleSoucoupe(){
+		var newSoucoupe = new soucoupeVolante();
+		newSoucoupe.animationSoucoupe();
+		soucoupeArray.push(newSoucoupe);
+}
+
+/** 
+	Verifier la colision entre le tir et chacune de soucoupes de l'array
+**/
 function checkColision(t){
 	for (var i = 0;i<soucoupeArray.length;i++) {
 			if(colision(t,soucoupeArray[i])){
@@ -185,10 +222,16 @@ function checkColision(t){
 	return null;
 }
 
+/** 
+	Verifier si le tir a atteing une cible.
+**/
 function tirReussi(tir){
 	return checkColision(tir);
 }
 
+/** 
+	verifier si le tir a atteint une soucoupe parmis les nombreuses soucoupes dans l'array
+**/
 function colision(a,b){
 	    return !(
         ((a.y + a.height) < (b.y)) ||
@@ -198,6 +241,9 @@ function colision(a,b){
     );
 }
 
+/** 
+	Enlever la soucoupe atteinte de l'array de soucoupe
+**/
 function enleverSoucoupe(soucoupe){
 	var index=soucoupeArray.indexOf(soucoupe);
 	if(index >-1){
@@ -210,6 +256,11 @@ Mettre a jour le score
 **/
 function mettreAJourScore(){
 	afficheScore.innerHTML=score;
+}
+
+//Generer un nombre aleatoire de 0 a limite
+function genererNomberAleatoire(limite){
+	return Math.floor((Math.random() * limite) + 1);
 }
 /** n'oubliez pas de faire précéder le code de vos fonctions 
     d'un commentaire documentant la fonction  **/
