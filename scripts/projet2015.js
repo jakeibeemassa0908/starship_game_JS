@@ -17,7 +17,8 @@ var TOUCHE_BAS=40;
 var TOUCHE_ESPACE=32;
 var bouton_nouvelleSoucoupe;
 var img_soucoupe;
-
+var score=0;
+var afficheScore;
 var tirArray=[];
 var soucoupeArray=[];
 
@@ -30,6 +31,10 @@ window.onload=function (){
 	//recuperer longueur et largeur canvas
 	Y_canvas=canvas.height;
 	X_canvas=canvas.width;
+
+	//recuperer le score
+	afficheScore=document.getElementById("score");
+	afficheScore.innerHTML=score;
 
 	//positionner la soucoupe au milieu du canvas
 	Y_vaisseau=Y_canvas/2;
@@ -121,6 +126,12 @@ function tir(){
 				//enlever la soucoupe de l'array
 				enleverSoucoupe(soucoupe_atteinte);
 				soucoupe_atteinte.atteint=true;
+				//mettre a jour le score
+				score+=200;
+				mettreAJourScore();
+				//effacer le tir
+				that.x=undefined;
+				that.y=undefined;
 			}
 
 	        if(that.x<=X_canvas + 40){
@@ -135,9 +146,9 @@ Creer une nouvelle soucoupe et l'animer vers le vaisseau
 **/
 function soucoupeVolante(){
 	this.x=X_canvas-50; 
-	this.y = Math.floor((Math.random() * Y_canvas) + 1);
 	this.width=img_soucoupe.width;
 	this.height=img_soucoupe.height;
+	this.y = Math.floor((Math.random() * Y_canvas-this.height) + 1);
 	this.atteint=false;
 	bouton_nouvelleSoucoupe.blur();
 
@@ -154,9 +165,14 @@ function soucoupeVolante(){
 		            that.animationSoucoupe(that.y);
 		        }else{
 	        	//alert(that.x);
+	        	if(that.x<=0){
+	        		score-=1000;
+	        		mettreAJourScore();
+	        		enleverSoucoupe(that);
+	        	}
 	        	context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
 	        }
-	    },300);
+	    },400);
 	}
 }
 
@@ -187,6 +203,13 @@ function enleverSoucoupe(soucoupe){
 	if(index >-1){
 		soucoupeArray.splice(index,1);
 	}
+}
+
+/**
+Mettre a jour le score
+**/
+function mettreAJourScore(){
+	afficheScore.innerHTML=score;
 }
 /** n'oubliez pas de faire précéder le code de vos fonctions 
     d'un commentaire documentant la fonction  **/
