@@ -17,13 +17,14 @@ var TOUCHE_BAS=40;
 var TOUCHE_ESPACE=32;
 var bouton_nouvelleSoucoupe;
 var bouton_flotteSoucoupe;
-var flag=false; //
+var flag=false; 
 var img_soucoupe;
 var score=0;
-var intervaleTemps=1000; //intervale temps en milliseconde pour que une nouvelle soucoupe soit creer
+var intervaleTemps=2000; //intervale temps en milliseconde pour que une nouvelle soucoupe soit creer
 var afficheScore;
 var tirArray=[];
 var soucoupeArray=[];
+var soucoupeEchapee=0;
 
 
 /**
@@ -82,7 +83,7 @@ window.addEventListener('keydown',this.check,false);
 function creerSoucoupeTime(){
 	var nombreAleatoire = genererNomberAleatoire(10);//creer un nombre aleatoire entre 0-10
 	setTimeout(function(){
-		if(flag){
+		if(flag & soucoupeEchapee<3){
 			creerSoucoupeTime();
 			//creer la probabilite 0.5 en verifiant si le nombre aleatoirement creer est pair ou impair
 			if(nombreAleatoire%2==0){
@@ -96,6 +97,10 @@ function creerSoucoupeTime(){
 verifie la touche du clavier et prend l'action correspondante
 **/
 function check(e) {
+	//Ne pas reagir si les soucoupes echapee sont 3 ou plus
+	if(soucoupeEchapee>=3)
+		return;
+
     var code = e.keyCode;
     //Touche haut
     if(code==TOUCHE_HAUT){
@@ -146,6 +151,7 @@ function tir(){
 	        that.x+=50;
 
 	        var soucoupe_atteinte=tirReussi(that);
+	        //La soucoupe a ete etteinte
 	        if(soucoupe_atteinte!=null){
 	        	context_canvas.clearRect(that.x-50,that.y+10,img_tir.width,img_tir.height);
 				//enlever la soucoupe de l'array
@@ -184,18 +190,30 @@ function soucoupeVolante(){
 				if(that.x<X_canvas- that.width){
 					context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
 				}
+				//bouger soucoupe
 		        context_canvas.drawImage(img_soucoupe,that.x,that.y);
-		        that.x-=50;
-		        if(that.x>=-50 && that.atteint==false){
-		            that.animationSoucoupe(that.y);
-		        }else{
-	        	//alert(that.x);
-	        	if(that.x<=0){
-	        		score-=1000;
-	        		mettreAJourScore();
-	        		enleverSoucoupe(that);
-	        	}
-	        	context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
+
+
+		        if(soucoupeEchapee<3){
+			        //si la soucoupe a ete atteinte ou n'est pas sorti du canvas
+			        if(that.x>=-50 && that.atteint==false){
+			        	that.x-=50;
+			            that.animationSoucoupe(that.y);
+			        }else{
+		        	
+		        	//si la soucoupe est sortie du canvas
+		        	if(that.x<=0){
+		        		score-=1000;
+		        		soucoupeEchapee++;
+		        		mettreAJourScore();
+		        		enleverSoucoupe(that);
+		        		context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
+		        	}
+
+		        	//Si la soucoupe a ete atteinte, deplacer vers le bas
+		        	context_canvas.clearRect(that.x+that.width,that.y,that.width,that.height);
+		        	deplacementVersBas(that);
+			        }
 	        }
 	    },400);
 	}
@@ -255,12 +273,33 @@ function enleverSoucoupe(soucoupe){
 Mettre a jour le score
 **/
 function mettreAJourScore(){
+	//reduire l'interval temps au fur et a mesure que le score augmente
+	if (intervaleTemps>800 && score >1000) {
+		intervaleTemps-= score-800;
+	};
 	afficheScore.innerHTML=score;
 }
 
 //Generer un nombre aleatoire de 0 a limite
 function genererNomberAleatoire(limite){
 	return Math.floor((Math.random() * limite) + 1);
+}
+
+/** 
+Deplacer la soucoupe toucher vers le bas
+**/
+function deplacementVersBas(soucoupeADeplacer){
+	var that = soucoupeADeplacer;
+	setTimeout(function(){
+		context_canvas.clearRect(that.x,that.y-that.height,that.width,that.height);
+		context_canvas.drawImage(img_soucoupe,that.x,that.y);
+		that.y+=that.height;
+		if(that.y>0){
+			deplacementVersBas(that);
+		}
+
+	},200);
+
 }
 /** n'oubliez pas de faire précéder le code de vos fonctions 
     d'un commentaire documentant la fonction  **/
