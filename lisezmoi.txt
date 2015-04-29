@@ -1,0 +1,13 @@
+Nom, Prenon, numero de groupe.
+
+Questions 1,2,3,4,5,6,7,8,9 ont ete traitee
+Question 10.1 traitee
+Question 10.2 traitee mais au lieu que la probabilite diminue avec le score, 
+J'ai garder la meme probabilite mais je diminue le numbre de milisecond neccesaire 
+a la creation d'une nouvelle soucoupe par raport au score.
+
+Probleme rencontrer.
+
+1. Manipuler le canvas: Dessinner object sur le canvas, annimer l'object.
+2. Creer plusieur loop qui s'execute apres un temps bien determiner pour simuler l'annimation.
+3. Utiliser la recursion pour annimer chaque oject dans le canvas.
